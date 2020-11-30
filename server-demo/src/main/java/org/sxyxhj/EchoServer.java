@@ -26,12 +26,7 @@ public class EchoServer {
     }
 
     public static void main(String[] args) throws Exception{
-        if(args.length != 1){
-            System.out.println("Usage: "+EchoServer.class.getSimpleName()+"<port>");
-            return;
-        }
-
-        int port = Integer.parseInt(args[0]);
+        int port = 1111;
         new EchoServer(port).start();
     }
 
@@ -43,13 +38,14 @@ public class EchoServer {
             ServerBootstrap bootstrap = new ServerBootstrap();
             bootstrap.group(group)
                     .channel(NioServerSocketChannel.class)
-                    .localAddress(new InetSocketAddress(port))
+                    //.localAddress(new InetSocketAddress(port))
                     .childHandler(new ChannelInitializer<SocketChannel>() {
                         protected void initChannel(SocketChannel socketChannel) throws Exception {
                             socketChannel.pipeline().addLast(serverHandler);
                         }
                     });
-            ChannelFuture future = bootstrap.bind().sync();
+            System.out.println("服务端开启------");
+            ChannelFuture future = bootstrap.bind(port).sync();
 
             future.channel().closeFuture().sync();
 

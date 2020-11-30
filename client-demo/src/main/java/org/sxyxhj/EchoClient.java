@@ -1,6 +1,7 @@
 package org.sxyxhj;
 
 import io.netty.bootstrap.Bootstrap;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.EventLoopGroup;
@@ -27,12 +28,9 @@ public class EchoClient {
     }
 
     public static void main(String[] args) throws  Exception{
-        if(args.length != 2){
-            System.out.println("Usage: "+EchoClient.class.getSimpleName()+"<port>");
-            return;
-        }
-        String host = args [0];
-        int port = Integer.parseInt(args[1]);
+
+        String host = "127.0.0.1";
+        int port = 1111;
 
         new EchoClient(host,port).start();
 
@@ -46,13 +44,16 @@ public class EchoClient {
             Bootstrap bootstrap = new Bootstrap();
             bootstrap.group(group)
                     .channel(NioSocketChannel.class)
-                    .localAddress(new InetSocketAddress(host,port))
+                    //.localAddress(new InetSocketAddress(host,port))
                     .handler(new ChannelInitializer<SocketChannel>() {
                         protected void initChannel(SocketChannel socketChannel) throws Exception {
                             socketChannel.pipeline().addLast(handler);
                         }
                     });
-            ChannelFuture future = bootstrap.bind().sync();
+            ChannelFuture future = bootstrap.connect(host,port).sync();
+
+            String req ="this is request";
+            future.channel().writeAndFlush(Unpooled.copiedBuffer(req.getBytes()));
 
             future.channel().closeFuture().sync();
 
