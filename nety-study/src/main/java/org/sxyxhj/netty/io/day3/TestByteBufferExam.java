@@ -1,6 +1,6 @@
-package org.sxyxhj.netty.day3;
+package org.sxyxhj.netty.io.day3;
 
-import org.sxyxhj.netty.day1.ByteBufferUtil;
+import org.sxyxhj.netty.io.day1.ByteBufferUtil;
 
 import java.nio.ByteBuffer;
 

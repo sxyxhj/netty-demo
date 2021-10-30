@@ -1,4 +1,4 @@
-package org.sxyxhj.netty.day1;
+package org.sxyxhj.netty.io.day1;
 
 import io.netty.util.internal.StringUtil;
 
