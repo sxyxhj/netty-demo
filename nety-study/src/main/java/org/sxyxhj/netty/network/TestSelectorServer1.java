@@ -16,12 +16,12 @@ import java.util.List;
 
 /**
  * @program: netty-demo
- * @description: 测试selector
+ * @description: 测试消息边界, 附件，
  *  @author: @sxyxhj
  * @create: 2021-10-30 17:35
  **/
 @Slf4j
-public class TestSelectorServer {
+public class TestSelectorServer1 {
     public static void main(String[] args) throws IOException {
         //创建Selector, 管理多个channel
         Selector selector = Selector.open();
@@ -38,6 +38,7 @@ public class TestSelectorServer {
 
         //channel注册到selector
         //将来发生实际后，通过它可以知道直接和哪个channel有关
+        ///第三个参数是附件
         SelectionKey sscKey = ssc.register(selector,0,null);
 
         log.info("register key , {}",sscKey);
@@ -66,7 +67,9 @@ public class TestSelectorServer {
                     ServerSocketChannel channel = (ServerSocketChannel) key.channel();
                     SocketChannel sc = channel.accept();
                     sc.configureBlocking(false);
-                    SelectionKey scKey = sc.register(selector,0,null);
+                    ByteBuffer buffer = ByteBuffer.allocate(16);
+                    //将一个bytebuffer作为附件关联到selectionKey上
+                    SelectionKey scKey = sc.register(selector,0,buffer);
 
                     scKey.interestOps(SelectionKey.OP_READ);
 
@@ -75,13 +78,24 @@ public class TestSelectorServer {
 
                     try {
                         SocketChannel channel = (SocketChannel) key.channel();
-                        ByteBuffer buffer = ByteBuffer.allocate(16);
+
+                        //获取
+
+                        ByteBuffer buffer = (ByteBuffer) key.attachment();
                         int read = channel.read(buffer);// read = -1 正常断开
                         if (read == -1) {
                             key.cancel();
                         }else {
-                            buffer.flip();
-                            ByteBufferUtil.debugRead(buffer);
+                            //buffer.flip();
+                            //ByteBufferUtil.debugRead(buffer);
+                            split(buffer);
+                            if (buffer.position() == buffer.limit()){
+                                ByteBuffer newBuffer = ByteBuffer.allocate(buffer.capacity() *2);
+                                buffer.flip();
+                                newBuffer.put(buffer);
+
+                                key.attach(newBuffer);
+                            }
 
                         }
 
@@ -100,6 +114,29 @@ public class TestSelectorServer {
 
 
     }
+
+    private static void split(ByteBuffer buffer){
+        //读模式
+        buffer.flip();
+
+        for (int i=0; i < buffer.limit();i++){
+            if(buffer.get(i) == '\n'){
+                int len = i+ 1 - buffer.position();
+                //把完整消息存入新的bytebuffer
+                ByteBuffer target = ByteBuffer.allocate(len);
+                //从buffer中读，向target写
+                for (int j=0; j < len ;j ++){
+                    target.put(buffer.get());
+                }
+                ByteBufferUtil.debugAll(target);
+
+            }
+        }
+
+        buffer.compact();
+
+    }
+
 }
 
     
