@@ -3,7 +3,10 @@ package org.sxyxhj.netty.network;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
+import java.util.Iterator;
 
 /**
  * @program: netty-demo
@@ -13,23 +16,28 @@ import java.nio.channels.SocketChannel;
  **/
 public class WriteClient {
     public static void main(String[] args) throws IOException {
+        Selector selector = Selector.open();
         SocketChannel sc = SocketChannel.open();
-
-
-        sc.connect(new InetSocketAddress(8080));
-
+        sc.configureBlocking(false);
+        sc.register(selector, SelectionKey.OP_CONNECT | SelectionKey.OP_READ);
+        sc.connect(new InetSocketAddress("localhost", 8080));
         int count = 0;
-        while (true){
-
-            ByteBuffer buffer = ByteBuffer.allocate(1024*1024);
-            count += sc.read(buffer);
-
-            System.out.println(count);
-            buffer.clear();
-
+        while (true) {
+            selector.select();
+            Iterator<SelectionKey> iter = selector.selectedKeys().iterator();
+            while (iter.hasNext()) {
+                SelectionKey key = iter.next();
+                iter.remove();
+                if (key.isConnectable()) {
+                    System.out.println(sc.finishConnect());
+                } else if (key.isReadable()) {
+                    ByteBuffer buffer = ByteBuffer.allocate(1024 * 1024);
+                    count += sc.read(buffer);
+                    buffer.clear();
+                    System.out.println(count);
+                }
+            }
         }
-
-
     }
 }
 

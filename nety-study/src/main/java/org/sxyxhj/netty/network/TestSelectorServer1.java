@@ -79,8 +79,7 @@ public class TestSelectorServer1 {
                     try {
                         SocketChannel channel = (SocketChannel) key.channel();
 
-                        //获取
-
+                        //从attachment中获取byte buffer
                         ByteBuffer buffer = (ByteBuffer) key.attachment();
                         int read = channel.read(buffer);// read = -1 正常断开
                         if (read == -1) {
