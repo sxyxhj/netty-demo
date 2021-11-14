@@ -28,6 +28,15 @@ public class EchoServerHandler extends ChannelInboundHandlerAdapter {
 
     }
 
+
+    //当一个新连接已经被创建时channelActive将会被调用
+    @Override
+    public void channelActive(ChannelHandlerContext ctx) throws Exception {
+        //super.channelActive(ctx);
+        System.out.println(ctx.channel().remoteAddress()+" connected!!");
+
+    }
+
     //？？？？
     @Override
     public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {

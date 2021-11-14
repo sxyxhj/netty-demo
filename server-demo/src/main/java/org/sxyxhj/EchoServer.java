@@ -8,6 +8,7 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import org.sxyxhj.server.EchoServerHandler;
+import org.sxyxhj.server.EchoServerOutHandler;
 
 import java.net.InetSocketAddress;
 
@@ -33,6 +34,7 @@ public class EchoServer {
     private void start() throws  Exception{
 
         final EchoServerHandler serverHandler = new EchoServerHandler();
+        EchoServerOutHandler outHandler = new EchoServerOutHandler();
         EventLoopGroup group = new NioEventLoopGroup();
         try {
             ServerBootstrap bootstrap = new ServerBootstrap();
@@ -41,7 +43,7 @@ public class EchoServer {
                     //.localAddress(new InetSocketAddress(port))
                     .childHandler(new ChannelInitializer<SocketChannel>() {
                         protected void initChannel(SocketChannel socketChannel) throws Exception {
-                            socketChannel.pipeline().addLast(serverHandler);
+                            socketChannel.pipeline().addLast(serverHandler).addLast(outHandler);
                         }
                     });
             System.out.println("服务端开启------");
